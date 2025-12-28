@@ -4,12 +4,18 @@ Exposes search_plans and calculate_plan_cost tools to LLMs via Model Context Pro
 """
 
 import json
+import sys
 from typing import List, Dict, Any
 from datetime import datetime
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
+from mcp.server.sse import SseServerTransport
 from mcp.types import Tool, TextContent
+from starlette.applications import Starlette
+from starlette.routing import Route, Mount
+from starlette.requests import Request
+from starlette.responses import Response
 
 from .db import get_session, get_plans_by_zip, get_plan_by_id, log_request
 from .models import SearchParams, CalculateParams, PlanSummary, PlanCostDetail, CostBreakdown
@@ -213,21 +219,75 @@ def _summarize_rate_structure(rate_structure: Dict[str, Any]) -> str:
     return ", ".join(summary_parts)
 
 
-async def main():
-    """Main entry point for MCP server."""
+async def main(mode="stdio", port=8080):
+    """Main entry point for MCP server.
+    
+    Args:
+        mode: "stdio" for subprocess transport, "http" for SSE/HTTP server
+        port: Port number for HTTP server (default: 8080)
+    """
     # Initialize database if needed
     from .db import init_database
     init_database()
 
-    # Run stdio server
-    async with stdio_server() as (read_stream, write_stream):
-        await app.run(
-            read_stream,
-            write_stream,
-            app.create_initialization_options(),
+    if mode == "http":
+        # Run HTTP/SSE server for pre-started instances
+        import uvicorn
+        
+        # Create SSE transport
+        sse = SseServerTransport("/messages/")
+        
+        async def handle_sse(request: Request):
+            """Handle SSE endpoint for MCP communication."""
+            async with sse.connect_sse(
+                request.scope, request.receive, request._send
+            ) as streams:
+                await app.run(
+                    streams[0],  # read_stream 
+                    streams[1],  # write_stream
+                    app.create_initialization_options(),
+                )
+            # Return empty response to avoid NoneType error
+            return Response()
+        
+        starlette_app = Starlette(
+            routes=[
+                Route("/sse", endpoint=handle_sse, methods=["GET"]),
+                Mount("/messages/", app=sse.handle_post_message),
+            ]
         )
+        
+        print(f"PowerToChoose MCP Server starting on http://localhost:{port}/sse", file=sys.stderr)
+        print(f"Database: {init_database.__module__}", file=sys.stderr)
+        
+        config = uvicorn.Config(
+            starlette_app,
+            host="127.0.0.1",
+            port=port,
+            log_level="info"
+        )
+        server = uvicorn.Server(config)
+        await server.serve()
+    else:
+        # Run stdio server (default for subprocess spawning)
+        async with stdio_server() as (read_stream, write_stream):
+            await app.run(
+                read_stream,
+                write_stream,
+                app.create_initialization_options(),
+            )
 
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
+    
+    # Check command line args for mode
+    mode = "stdio"
+    port = 8080
+    if len(sys.argv) > 1:
+        if sys.argv[1] == "--http":
+            mode = "http"
+            if len(sys.argv) > 2:
+                port = int(sys.argv[2])
+    
+    asyncio.run(main(mode=mode, port=port))
