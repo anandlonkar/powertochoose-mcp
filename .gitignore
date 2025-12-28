@@ -27,6 +27,9 @@ ENV/
 # Data directory (contains database, PDFs, logs)
 data/
 
+# Upload directory
+uploads/
+
 # IDE
 .vscode/
 .idea/
@@ -48,4 +51,6 @@ htmlcov/
 
 # Environment variables
 .env
+*.env
+!.env.example
 .env.local

@@ -1,6 +1,45 @@
 version: '3.8'
 
 services:
+  mcp-server:
+    build: .
+    container_name: powertochoose-mcp
+    command: python -m powertochoose_mcp.server --http 8080
+    ports:
+      - "127.0.0.1:8080:8080"  # Localhost only (internal access)
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+    environment:
+      - DATABASE_PATH=/app/data/powertochoose.db
+      - EFL_DIR=/app/data/efls
+      - LOG_DIR=/app/data/logs
+    restart: unless-stopped
+    networks:
+      - internal
+
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: powertochoose-api
+    ports:
+      - "8000:8000"  # Exposed to internet (via reverse proxy)
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:8080/sse
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ALLOWED_ORIGINS=https://dijit.tech,http://localhost:3000
+      - DATABASE_PATH=/app/data/powertochoose.db
+    restart: unless-stopped
+    networks:
+      - internal
+      - external
+    depends_on:
+      - mcp-server
+
   scraper:
     build: .
     container_name: powertochoose-scraper
@@ -13,3 +52,11 @@ services:
       - EFL_DIR=/app/data/efls
       - LOG_DIR=/app/data/logs
     restart: unless-stopped
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: bridge

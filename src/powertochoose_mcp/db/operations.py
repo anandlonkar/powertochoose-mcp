@@ -179,3 +179,25 @@ def cleanup_old_logs(session: Session, retention_days: int):
     cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
     session.query(RequestLog).filter(RequestLog.timestamp < cutoff_date).delete()
     session.flush()
+
+
+def get_plan_count() -> int:
+    """Get total number of plans in database.
+    
+    Returns:
+        Total count of plans
+    """
+    with get_session() as session:
+        return session.query(Plan).count()
+
+
+def get_last_scrape_time() -> Optional[datetime]:
+    """Get timestamp of most recent scrape.
+    
+    Returns:
+        Datetime of last scrape or None if no plans exist
+    """
+    with get_session() as session:
+        result = session.query(Plan).order_by(Plan.scraped_at.desc()).first()
+        return result.scraped_at if result else None
+
