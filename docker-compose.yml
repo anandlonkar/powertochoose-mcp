@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  scraper:
+    build: .
+    container_name: powertochoose-scraper
+    command: tail -f /dev/null
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+    environment:
+      - DATABASE_PATH=/app/data/powertochoose.db
+      - EFL_DIR=/app/data/efls
+      - LOG_DIR=/app/data/logs
+    restart: unless-stopped
