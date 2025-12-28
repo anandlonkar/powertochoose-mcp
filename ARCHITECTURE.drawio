@@ -1,0 +1,240 @@
+<mxfile host="app.diagrams.net" modified="2025-12-27T00:00:00.000Z" agent="5.0" version="22.1.11">
+  <diagram name="PowerToChoose MCP Architecture" id="architecture">
+    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Desktop Machine Container -->
+        <mxCell id="desktop" value="Desktop Machine (Windows)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;verticalAlign=top;fontStyle=1;fontSize=16;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="1520" height="1120" as="geometry" />
+        </mxCell>
+        
+        <!-- Title -->
+        <mxCell id="title" value="PowerToChoose MCP Server - MVP Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="600" y="60" width="400" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- Claude Desktop -->
+        <mxCell id="claude" value="Claude Desktop / VS Code" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="120" y="120" width="200" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- MCP Server -->
+        <mxCell id="mcp-server" value="MCP Server&lt;br&gt;(Native Python)&lt;br&gt;&lt;br&gt;stdio transport&lt;br&gt;stdio://&lt;br&gt;&lt;br&gt;Tools:&lt;br&gt;- search_plans&lt;br&gt;- calculate_plan_cost" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="120" y="260" width="200" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- stdio connection -->
+        <mxCell id="stdio-conn" value="stdio" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=2;fillColor=#fff2cc;strokeColor=#d6b656;" edge="1" parent="1" source="claude" target="mcp-server">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="220" y="200" as="sourcePoint" />
+            <mxPoint x="220" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Docker Container -->
+        <mxCell id="docker-container" value="Docker Container (powertochoose-scraper)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="440" y="120" width="360" height="480" as="geometry" />
+        </mxCell>
+        
+        <!-- Scraper Process -->
+        <mxCell id="scraper" value="Scraper Process&lt;br&gt;&lt;br&gt;Python Module:&lt;br&gt;powertochoose_mcp.scraper&lt;br&gt;&lt;br&gt;Actions:&lt;br&gt;• Scrape powertochoose.org&lt;br&gt;• Download EFL PDFs&lt;br&gt;• Parse rate structures&lt;br&gt;• Calculate costs (3 tiers)&lt;br&gt;• Store in database&lt;br&gt;• Extract classifications&lt;br&gt;• Clean up old data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="460" y="160" width="320" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- Container Runtime -->
+        <mxCell id="runtime" value="Runtime Environment&lt;br&gt;&lt;br&gt;Base: python:3.12-slim&lt;br&gt;Command: tail -f /dev/null&lt;br&gt;(keeps container alive)&lt;br&gt;&lt;br&gt;Packages:&lt;br&gt;• httpx (web scraping)&lt;br&gt;• beautifulsoup4 (HTML)&lt;br&gt;• pypdf (PDF parsing)&lt;br&gt;• sqlalchemy (database)&lt;br&gt;• pydantic (validation)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="460" y="380" width="320" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- Windows Task Scheduler -->
+        <mxCell id="scheduler" value="Windows Task Scheduler&lt;br&gt;&lt;br&gt;Schedule: Daily at 00:00&lt;br&gt;&lt;br&gt;Command:&lt;br&gt;docker exec powertochoose-scraper \&lt;br&gt;  python -m powertochoose_mcp.scraper \&lt;br&gt;  --today&lt;br&gt;&lt;br&gt;Determines bucket from day of week&lt;br&gt;Scrapes ZIP codes where:&lt;br&gt;int(zip_code) % 7 == day" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="440" y="680" width="360" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- Mounted Volume -->
+        <mxCell id="volume" value="Mounted Volume (./data/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="920" y="120" width="320" height="760" as="geometry" />
+        </mxCell>
+        
+        <!-- SQLite Database -->
+        <mxCell id="sqlite" value="powertochoose.db&lt;br&gt;(SQLite + WAL mode)&lt;br&gt;&lt;br&gt;Tables:&lt;br&gt;• plans&lt;br&gt;• plan_classifications&lt;br&gt;• request_logs&lt;br&gt;&lt;br&gt;Access:&lt;br&gt;• Scraper (write)&lt;br&gt;• MCP Server (read)&lt;br&gt;&lt;br&gt;Retention: 7-day rolling" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="940" y="160" width="280" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- EFL PDFs -->
+        <mxCell id="efls" value="efls/&lt;br&gt;(EFL PDF Files)&lt;br&gt;&lt;br&gt;Files:&lt;br&gt;{plan_id}_{date}.pdf&lt;br&gt;&lt;br&gt;Purpose:&lt;br&gt;• Downloaded during scraping&lt;br&gt;• Parsed for rate structures&lt;br&gt;• Stored for 2 days&lt;br&gt;• Enable reruns if needed&lt;br&gt;&lt;br&gt;Cleanup:&lt;br&gt;Delete files older than 2 days" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="940" y="400" width="280" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- Request Logs -->
+        <mxCell id="logs" value="logs/&lt;br&gt;(Request Logs - JSONL)&lt;br&gt;&lt;br&gt;Files:&lt;br&gt;requests_{YYYY-MM-DD}.jsonl&lt;br&gt;&lt;br&gt;Format: JSON Lines&lt;br&gt;Each line = one request&lt;br&gt;&lt;br&gt;Contains:&lt;br&gt;• Timestamp&lt;br&gt;• Tool name&lt;br&gt;• Parameters&lt;br&gt;• Classifications used&lt;br&gt;• Result count&lt;br&gt;&lt;br&gt;Retention: 90 days" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="940" y="640" width="280" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- Connections: MCP Server to Database -->
+        <mxCell id="mcp-db-conn" value="read" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;dashed=1;" edge="1" parent="1" source="mcp-server" target="sqlite">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="350" />
+              <mxPoint x="380" y="270" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Connections: MCP Server to Logs -->
+        <mxCell id="mcp-log-conn" value="write logs" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=2;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;" edge="1" parent="1" source="mcp-server" target="logs">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="220" y="480" />
+              <mxPoint x="220" y="750" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Connections: Scraper to Database -->
+        <mxCell id="scraper-db-conn" value="write" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=2;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="scraper" target="sqlite">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        
+        <!-- Connections: Scraper to EFLs -->
+        <mxCell id="scraper-efl-conn" value="download &amp; store" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=2;fillColor=#f8cecc;strokeColor=#b85450;" edge="1" parent="1" source="scraper" target="efls">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="840" y="260" />
+              <mxPoint x="840" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Connections: Scheduler to Scraper -->
+        <mxCell id="scheduler-scraper-conn" value="triggers via&#xa;docker exec" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=3;fillColor=#ffe6cc;strokeColor=#d79b00;" edge="1" parent="1" source="scheduler" target="scraper">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="640" />
+              <mxPoint x="620" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- External Web Source -->
+        <mxCell id="powertochoose" value="powertochoose.org&lt;br&gt;&lt;br&gt;Public Website&lt;br&gt;&lt;br&gt;Scraped data:&lt;br&gt;• Plan listings by ZIP&lt;br&gt;• Plan details pages&lt;br&gt;• EFL PDF downloads&lt;br&gt;• Provider info&lt;br&gt;• Classifications (tags)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="440" y="940" width="360" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- Connection: Scraper to Website -->
+        <mxCell id="scraper-web-conn" value="HTTP requests" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeWidth=2;fillColor=#e1d5e7;strokeColor=#9673a6;" edge="1" parent="1" source="scraper" target="powertochoose">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="400" />
+              <mxPoint x="620" y="1030" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Flow 1: Scraping Flow -->
+        <mxCell id="flow1-title" value="Flow 1: Daily Scraping (00:00)" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="120" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="flow1-steps" value="1. Task Scheduler triggers&#xa;   ↓&#xa;2. docker exec into container&#xa;   ↓&#xa;3. Determine bucket (day % 7)&#xa;   ↓&#xa;4. Select ZIP codes for bucket&#xa;   ↓&#xa;5. For each ZIP:&#xa;   • Fetch plan listings&#xa;   • Download EFL PDFs&#xa;   • Parse rate structures&#xa;   • Calculate costs (3 tiers)&#xa;   • Extract classifications&#xa;   • Store in database&#xa;   ↓&#xa;6. Cleanup old data:&#xa;   • EFL PDFs &gt; 2 days&#xa;   • Logs &gt; 90 days&#xa;   ↓&#xa;7. Log scraping summary" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="180" width="200" height="300" as="geometry" />
+        </mxCell>
+        
+        <!-- Flow 2: Query Flow -->
+        <mxCell id="flow2-title" value="Flow 2: LLM Query (On-Demand)" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="520" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="flow2-steps" value="1. User asks Claude:&#xa;   &quot;Find green plans in Frisco&quot;&#xa;   ↓&#xa;2. Claude invokes MCP tool:&#xa;   search_plans(&#xa;     zip_code=&quot;75035&quot;,&#xa;     classifications=[&quot;green&quot;]&#xa;   )&#xa;   ↓&#xa;3. MCP Server queries SQLite:&#xa;   • Filter by ZIP code&#xa;   • Filter by classifications&#xa;   • Return complete plans only&#xa;   ↓&#xa;4. Return structured JSON&#xa;   ↓&#xa;5. User: &quot;Show cost for plan X&quot;&#xa;   ↓&#xa;6. Claude invokes:&#xa;   calculate_plan_cost(&#xa;     plan_id=&quot;X&quot;&#xa;   )&#xa;   ↓&#xa;7. MCP returns breakdown:&#xa;   • Costs at 500/1000/2000 kWh&#xa;   • Base, energy, TDU, taxes&#xa;   • Rate structure details&#xa;   ↓&#xa;8. Log request to JSONL" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="580" width="200" height="360" as="geometry" />
+        </mxCell>
+        
+        <!-- Tech Stack -->
+        <mxCell id="tech-stack-title" value="Technology Stack" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="980" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tech-stack" value="• Python 3.12&#xa;• MCP SDK (stdio transport)&#xa;• SQLite 3.x + WAL mode&#xa;• SQLAlchemy 2.x (ORM)&#xa;• Pydantic 2.x (validation)&#xa;• httpx (async HTTP)&#xa;• BeautifulSoup4 (HTML)&#xa;• pypdf/pdfplumber (PDF)&#xa;• Docker + Docker Compose&#xa;• Windows Task Scheduler" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="1040" width="200" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- Key Decisions -->
+        <mxCell id="decisions-title" value="Key Decisions" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="520" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="decisions" value="✓ SQLite: Single-file,&#xa;  portable, sufficient scale&#xa;&#xa;✓ Docker: Portable,&#xa;  consistent environment&#xa;&#xa;✓ External scheduling:&#xa;  Simpler container,&#xa;  easier debugging&#xa;&#xa;✓ 7 buckets: Balance&#xa;  freshness vs load&#xa;&#xa;✓ JSONL logs: Easy&#xa;  append, streaming" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="580" width="200" height="180" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Retention -->
+        <mxCell id="retention-title" value="Data Retention" style="text;html=1;strokeColor=#b85450;fillColor=#f8cecc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="800" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="retention" value="• Plan data: 7 days&#xa;  (rolling cache)&#xa;&#xa;• EFL PDFs: 2 days&#xa;  (enable reruns)&#xa;&#xa;• Request logs: 90 days&#xa;  (pattern analysis)&#xa;&#xa;Cleanup runs at start&#xa;of each scrape" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="80" y="860" width="200" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- ZIP Codes -->
+        <mxCell id="zips-title" value="Initial ZIP Codes (MVP)" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1060" width="200" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="zips" value="75035 - Frisco (0)&#xa;75024 - Plano W (3)&#xa;75074 - Plano E (4)&#xa;75093 - Plano N (2)&#xa;75034 - Frisco N (6)&#xa;75033 - Frisco S (5)&#xa;75070 - McKinney (0)&#xa;&#xa;(number) = bucket&#xa;= int(zip) % 7" style="text;html=1;strokeColor=#666666;fillColor=#f5f5f5;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fontSize=10;fontFamily=Courier New;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1120" width="200" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- Legend -->
+        <mxCell id="legend-title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="920" y="920" width="80" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-stdio" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="920" y="960" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-stdio-text" value="User Interface / stdio" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="955" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-compute" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="920" y="990" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-compute-text" value="Compute / Processing" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="985" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-storage" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1020" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-storage-text" value="Storage / Database" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="1015" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-files" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1050" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-files-text" value="File Storage" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="1045" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-scheduler" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1080" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-scheduler-text" value="Scheduler / Trigger" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="1075" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="legend-external" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="920" y="1110" width="30" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-external-text" value="External Service" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="960" y="1105" width="140" height="30" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
